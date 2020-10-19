@@ -80,3 +80,20 @@ def test_delete_message(client):
     rv = client.get('/delete/1')
     data = json.loads(rv.data)
     assert data["status"] == 1
+
+def test_search(client):
+    """Ensure search works"""
+    login(client, app.config["USERNAME"], app.config["PASSWORD"])
+    rv = client.post(
+        "/add",
+        data=dict(title="<Hello>", text="<strong>HTML</strong> hello allowed here"),
+        follow_redirects=True,
+    )
+
+    assert b"No entries here so far" not in rv.data
+    assert b"&lt;Hello&gt;" in rv.data
+    assert b"<strong>HTML</strong> hello allowed here" in rv.data
+
+    rv = client.get("/search/?query=HTML")
+    
+    assert b"<strong>HTML</strong> hello allowed here" in rv.data
